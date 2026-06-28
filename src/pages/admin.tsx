@@ -19,8 +19,8 @@ type Topic = {
   id: string
   title: string
   subject_id: string
+  parent_id: string | null
 }
-
 export default function Admin() {
   const navigate = useNavigate()
 
@@ -56,7 +56,19 @@ export default function Admin() {
 
   // Tracks which content item is currently being edited (null = not editing)
   const [editingId, setEditingId] = useState<string | null>(null)
+// -------------------------------------------------------
+  // State for the "Add Sub-topic" mini-form
+  // -------------------------------------------------------
+  const [newSubtopicParentId, setNewSubtopicParentId] = useState('')
+  const [newSubtopicTitle, setNewSubtopicTitle] = useState('')
+  const [newSubtopicDifficulty, setNewSubtopicDifficulty] = useState('INTERMEDIATE')
+  const [savingSubtopic, setSavingSubtopic] = useState(false)
+  const [subtopicMessage, setSubtopicMessage] = useState('')
 
+  // Parent topics only (no parent_id) — used to populate the dropdown
+  // We reuse the same `topics` array already fetched for the content form,
+  // filtering out any that already have a parent themselves
+ const parentTopicsOnly = topics.filter(t => t.parent_id === null)
   // -------------------------------------------------------
   // On load: check admin access, then fetch subjects
   // -------------------------------------------------------
@@ -68,7 +80,7 @@ export default function Admin() {
 
       if (!admin) return // don't bother fetching data if not admin
 
-      const { data } = await supabase
+  const { data } = await supabase
         .from('subjects')
         .select('id, name')
         .order('sort_order', { ascending: true })
@@ -87,9 +99,9 @@ export default function Admin() {
         setTopics([])
         return
       }
-      const { data } = await supabase
+   const { data } = await supabase
         .from('topics')
-        .select('id, title, subject_id')
+        .select('id, title, subject_id, parent_id')
         .eq('subject_id', selectedSubjectId)
         .order('sort_order', { ascending: true })
 
@@ -256,6 +268,59 @@ export default function Admin() {
     setSuccessMessage('')
   }
   // -------------------------------------------------------
+  // Save a new sub-topic under a selected parent topic
+  // -------------------------------------------------------
+  async function handleAddSubtopic() {
+    if (!newSubtopicParentId || !newSubtopicTitle.trim()) {
+      alert('Please select a parent topic and enter a title.')
+      return
+    }
+
+    setSavingSubtopic(true)
+    setSubtopicMessage('')
+
+    // Find the parent topic so we can copy its subject_id and exam_types
+    const parentTopic = topics.find(t => t.id === newSubtopicParentId)
+
+    // Build a URL-friendly slug from the title
+    // e.g. "Quadratic Equations" -> "quadratic-equations"
+    const slug = newSubtopicTitle
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '') // remove special characters
+      .replace(/\s+/g, '-')         // replace spaces with hyphens
+
+    const { error } = await supabase.from('topics').insert({
+      subject_id: parentTopic?.subject_id,
+      parent_id: newSubtopicParentId,
+      title: newSubtopicTitle.trim(),
+      slug,
+      difficulty: newSubtopicDifficulty,
+      is_active: true,
+    })
+
+    setSavingSubtopic(false)
+
+    if (error) {
+      alert('Error adding sub-topic: ' + error.message)
+      return
+    }
+
+    setSubtopicMessage('✅ Sub-topic added successfully!')
+    setNewSubtopicTitle('')
+
+    // Refresh the topics dropdown so the new sub-topic
+    // appears immediately if the user picks the same subject
+    if (selectedSubjectId === parentTopic?.subject_id) {
+      const { data } = await supabase
+        .from('subjects')
+        .select('id, name')
+        .order('sort_order', { ascending: true })
+
+      if (data) setSubjects(data)
+    }
+  }
+  // -------------------------------------------------------
   // RENDER: Access control states
   // -------------------------------------------------------
   if (checkingAccess) {
@@ -344,6 +409,61 @@ export default function Admin() {
         {/* ============ TAB: ADD / EDIT FORM ============ */}
         {activeTab === 'add' && (
           <div className="px-8 py-8 max-w-2xl">
+
+            {/* ============ MINI-FORM: ADD SUB-TOPIC ============ */}
+            <div className="bg-indigo-50 rounded-2xl border border-indigo-100 p-5 mb-6">
+              <h2 className="text-sm font-bold text-indigo-700 mb-3">➕ Add a Sub-topic</h2>
+
+              {subtopicMessage && (
+                <div className="bg-white text-green-700 text-xs font-medium px-3 py-2 rounded-lg mb-3">
+                  {subtopicMessage}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3">
+                {/* Parent topic dropdown — uses the same subject already selected below */}
+                <select
+                  value={newSubtopicParentId}
+                  onChange={e => setNewSubtopicParentId(e.target.value)}
+                  disabled={!selectedSubjectId}
+                  className="w-full border border-indigo-200 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:border-indigo-400 disabled:bg-gray-50 disabled:text-gray-400"
+                >
+                  <option value="">
+                    {selectedSubjectId ? 'Select parent topic...' : 'Select a subject below first'}
+                  </option>
+                  {parentTopicsOnly.map(t => (
+                    <option key={t.id} value={t.id}>{t.title}</option>
+                  ))}
+                </select>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSubtopicTitle}
+                    onChange={e => setNewSubtopicTitle(e.target.value)}
+                    placeholder="Sub-topic title, e.g. Logarithms"
+                    className="flex-1 border border-indigo-200 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white placeholder-gray-400 focus:outline-none focus:border-indigo-400"
+                  />
+                  <select
+                    value={newSubtopicDifficulty}
+                    onChange={e => setNewSubtopicDifficulty(e.target.value)}
+                    className="border border-indigo-200 rounded-xl px-2 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:border-indigo-400"
+                  >
+                    <option value="BEGINNER">Beginner</option>
+                    <option value="INTERMEDIATE">Intermediate</option>
+                    <option value="ADVANCED">Advanced</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleAddSubtopic}
+                  disabled={savingSubtopic}
+                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white text-sm font-semibold py-2 rounded-xl transition-colors duration-200"
+                >
+                  {savingSubtopic ? 'Adding...' : 'Add Sub-topic'}
+                </button>
+              </div>
+            </div>
 
             {successMessage && (
               <div className="bg-green-50 text-green-700 text-sm font-medium px-4 py-3 rounded-xl mb-6">

@@ -25,6 +25,14 @@ type ContentItem = {
 type TopicInfo = {
   id: string
   title: string
+  parent_id: string | null
+}
+
+// Shape of a sub-topic card shown at the top of the page
+type SubTopic = {
+  id: string
+  title: string
+  difficulty: string
 }
 
 // The 4 tabs students can switch between
@@ -46,6 +54,7 @@ export default function ContentPage() {
   const { topicId } = useParams() // grabs :topicId from the URL
 
   const [topic, setTopic] = useState<TopicInfo | null>(null)
+  const [subTopics, setSubTopics] = useState<SubTopic[]>([])
   const [allContent, setAllContent] = useState<ContentItem[]>([])
   const [activeTab, setActiveTab] = useState('LESSON')
   const [loading, setLoading] = useState(true)
@@ -65,14 +74,27 @@ export default function ContentPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) setUserId(session.user.id)
 
-      // Fetch the topic name for the header
+  // Fetch the topic name for the header
       const { data: topicData } = await supabase
         .from('topics')
-        .select('id, title')
+        .select('id, title, parent_id')
         .eq('id', topicId)
         .single()
 
       if (topicData) setTopic(topicData)
+
+      // If this topic has no parent (i.e. it IS a parent topic),
+      // fetch its sub-topics to show as cards
+      if (topicData && topicData.parent_id === null) {
+        const { data: subTopicsData } = await supabase
+          .from('topics')
+          .select('id, title, difficulty')
+          .eq('parent_id', topicId)
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true })
+
+        if (subTopicsData) setSubTopics(subTopicsData)
+      }
 
       // Fetch all published content for this topic
       const { data: contentData } = await supabase
@@ -132,9 +154,37 @@ export default function ContentPage() {
 
   // Toggle whether a question's solution is expanded
   function toggleExpand(id: string) {
+    const isCurrentlyExpanded = expandedIds.includes(id)
     setExpandedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+      isCurrentlyExpanded ? prev.filter(i => i !== id) : [...prev, id]
     )
+
+    // Only log progress when OPENING (not closing) a card,
+    // and only if we have a logged-in user
+    if (!isCurrentlyExpanded && userId && topicId) {
+      logProgress(id)
+    }
+  }
+
+  // -------------------------------------------------------
+  // Record that the student viewed this content item.
+  // Uses upsert so repeated views don't create duplicate rows —
+  // the UNIQUE(user_id, content_id) constraint we set in the
+  // database schema handles that automatically.
+  // -------------------------------------------------------
+  async function logProgress(contentId: string) {
+    await supabase
+      .from('user_progress')
+      .upsert(
+        {
+          user_id: userId,
+          content_id: contentId,
+          topic_id: topicId,
+          is_completed: true, // viewing counts as "completed" for now — simple v1 definition
+          last_accessed: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,content_id' } // if it already exists, update instead of erroring
+      )
   }
 
   if (loading) {
@@ -194,6 +244,27 @@ export default function ContentPage() {
             })}
           </div>
         </div>
+
+  {/* Sub-topics — only shown if this topic has any */}
+        {subTopics.length > 0 && (
+          <div className="px-8 pt-6 pb-2 max-w-3xl">
+            <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Sub-topics</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              {subTopics.map(sub => (
+                <button
+                  key={sub.id}
+                  onClick={() => navigate(`/topics/${sub.id}/content`)}
+                  className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 hover:border-indigo-300 hover:shadow-sm transition-all duration-200 text-left"
+                >
+                  <span className="text-sm font-medium text-gray-700">{sub.title}</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${DIFFICULTY_STYLES[sub.difficulty]}`}>
+                    {sub.difficulty}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Content list */}
         <div className="px-8 py-8 max-w-3xl">

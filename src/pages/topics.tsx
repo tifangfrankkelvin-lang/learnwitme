@@ -120,18 +120,24 @@ export default function Topics() {
                 return (
                   <div key={parent.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
-                    {/* Parent topic header */}
-                    <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+                   {/* Parent topic header — clickable, links to its own content page */}
+                    <button
+                      onClick={() => navigate(`/topics/${parent.id}/content`)}
+                      className="w-full flex items-center justify-between px-5 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors duration-150 text-left"
+                    >
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center">
                           <BookOpen className="text-indigo-600" size={18} />
                         </div>
                         <h3 className="font-bold text-gray-900">{parent.title}</h3>
                       </div>
-                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${DIFFICULTY_STYLES[parent.difficulty]}`}>
-                        {parent.difficulty}
-                      </span>
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${DIFFICULTY_STYLES[parent.difficulty]}`}>
+                          {parent.difficulty}
+                        </span>
+                        <ChevronRight size={16} className="text-gray-300" />
+                      </div>
+                    </button>
 
                     {/* Sub-topics list — only shown if there are any */}
                     {subTopics.length > 0 && (

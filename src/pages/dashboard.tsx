@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Target, Calendar, ChevronRight, Brain } from 'lucide-react'
+import { BookOpen, Target, Calendar, ChevronRight, Brain, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 import Sidebar from '../components/Sidebar'
@@ -21,14 +21,9 @@ const SUBJECT_COLORS: Record<string, string> = {
   PHY: 'bg-sky-50 border-sky-200 text-sky-700',
   CHEM: 'bg-green-50 border-green-200 text-green-700',
   BIO: 'bg-yellow-50 border-yellow-200 text-yellow-700',
-  ENG: 'bg-purple-50 border-purple-200 text-purple-700',
-  FRE: 'bg-pink-50 border-pink-200 text-pink-700',
-  HIST: 'bg-orange-50 border-orange-200 text-orange-700',
-  GEO: 'bg-teal-50 border-teal-200 text-teal-700',
-  ECON: 'bg-blue-50 border-blue-200 text-blue-700',
   FMATH: 'bg-violet-50 border-violet-200 text-violet-700',
   CS: 'bg-gray-50 border-gray-200 text-gray-700',
-  LIT: 'bg-rose-50 border-rose-200 text-rose-700',
+
 }
 
 const SUBJECT_EMOJIS: Record<string, string> = {
@@ -54,6 +49,8 @@ export default function Dashboard() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [profile, setProfile] = useState<{ full_name: string; avatar_url: string } | null>(null)
   const [loading, setLoading] = useState(true)
+  // Tracks total completed items and total available items
+  const [progressStats, setProgressStats] = useState({ completed: 0, total: 0 })
 
   useEffect(() => {
     async function loadDashboard() {
@@ -77,9 +74,30 @@ export default function Dashboard() {
         .select('id, exam_type, target_year, subjects(id, name, code)')
         .eq('user_id', session.user.id)
         .eq('is_active', true)
-      if (enrollmentData) setEnrollments(enrollmentData as unknown as Enrollment[])
+     if (enrollmentData) setEnrollments(enrollmentData as unknown as Enrollment[])
+
+      // Fetch total completed content items for this student
+      const { count: completedCount } = await supabase
+        .from('user_progress')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .eq('is_completed', true)
+
+      // Fetch total published content items available across the app
+      // (a simple global denominator for now — good enough for a v1 progress %)
+      const { count: totalCount } = await supabase
+        .from('content')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_published', true)
+
+      setProgressStats({
+        completed: completedCount || 0,
+        total: totalCount || 0,
+      })
+
       setLoading(false)
     }
+
     loadDashboard()
   }, [navigate, setUser, setSession])
 
@@ -126,8 +144,8 @@ export default function Dashboard() {
         </header>
 
         <div className="px-8 py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+       <button onClick={() => navigate('/settings')} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4 hover:border-indigo-300 hover:shadow-md transition-all duration-200 text-left">
               <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
                 <Target className="text-indigo-600" size={24} />
               </div>
@@ -135,8 +153,8 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Exam</p>
                 <p className="text-sm font-bold text-gray-900">{EXAM_LABELS[examType] || examType}</p>
               </div>
-            </div>
-            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+            </button>
+         <button onClick={() => navigate('/settings')} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4 hover:border-indigo-300 hover:shadow-md transition-all duration-200 text-left">
               <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
                 <BookOpen className="text-green-600" size={24} />
               </div>
@@ -144,8 +162,8 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Subjects</p>
                 <p className="text-sm font-bold text-gray-900">{enrollments.length} enrolled</p>
               </div>
-            </div>
-            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+            </button>
+   <button onClick={() => navigate('/settings')} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4 hover:border-indigo-300 hover:shadow-md transition-all duration-200 text-left">
               <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
                 <Calendar className="text-orange-600" size={24} />
               </div>
@@ -155,7 +173,21 @@ export default function Dashboard() {
                   {targetYear} · {daysLeft > 0 ? `${daysLeft} days left` : 'Exam passed'}
                 </p>
               </div>
+            </button>
+
+            {/* Progress card */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                <CheckCircle2 className="text-purple-600" size={24} />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Progress</p>
+                <p className="text-sm font-bold text-gray-900">
+                  {progressStats.completed} / {progressStats.total} viewed
+                </p>
+              </div>
             </div>
+
           </div>
 
           <div className="bg-indigo-600 rounded-2xl p-6 mb-8 flex items-center justify-between">

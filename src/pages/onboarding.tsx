@@ -33,18 +33,12 @@ const EXAM_TYPES = [
 // Each subject has a color for its icon background
 // -------------------------------------------------------
 const SUBJECTS = [
-  { code: 'MATH',  label: 'Mathematics',      emoji: '📐', color: 'bg-indigo-50 text-indigo-600' },
-  { code: 'PHY',   label: 'Physics',          emoji: '⚛️', color: 'bg-sky-50 text-sky-600' },
-  { code: 'CHEM',  label: 'Chemistry',        emoji: '🧪', color: 'bg-green-50 text-green-600' },
-  { code: 'BIO',   label: 'Biology',          emoji: '🧬', color: 'bg-yellow-50 text-yellow-600' },
-  { code: 'ENG',   label: 'English Language', emoji: '📖', color: 'bg-purple-50 text-purple-600' },
-  { code: 'FRE',   label: 'French Language',  emoji: '🗣️', color: 'bg-pink-50 text-pink-600' },
-  { code: 'HIST',  label: 'History',          emoji: '🏛️', color: 'bg-orange-50 text-orange-600' },
-  { code: 'GEO',   label: 'Geography',        emoji: '🌍', color: 'bg-teal-50 text-teal-600' },
-  { code: 'ECON',  label: 'Economics',        emoji: '📈', color: 'bg-blue-50 text-blue-600' },
-  { code: 'FMATH', label: 'Further Mathematics', emoji: '∑', color: 'bg-violet-50 text-violet-600' },
-  { code: 'CS',    label: 'Computer Science', emoji: '💻', color: 'bg-gray-50 text-gray-600' },
-  { code: 'LIT',   label: 'Literature',       emoji: '📜', color: 'bg-rose-50 text-rose-600' },
+  { code: 'MATH',  label: 'Mathematics',         emoji: '📐', color: 'bg-indigo-50 text-indigo-600' },
+  { code: 'PHY',   label: 'Physics',             emoji: '⚛️', color: 'bg-sky-50 text-sky-600' },
+  { code: 'CHEM',  label: 'Chemistry',           emoji: '🧪', color: 'bg-green-50 text-green-600' },
+  { code: 'BIO',   label: 'Biology',             emoji: '🧬', color: 'bg-yellow-50 text-yellow-600' },
+  { code: 'FMATH', label: 'Further Mathematics', emoji: '🔢', color: 'bg-violet-50 text-violet-600' },
+  { code: 'CS',    label: 'Computer Science',    emoji: '💻', color: 'bg-gray-50 text-gray-600' },
 ]
 
 // -------------------------------------------------------

@@ -8,6 +8,11 @@ import Topics from './pages/topics.tsx'
 import Admin from './pages/admin.tsx'
 import ContentPage from './pages/content.tsx'
 import Bookmarks from './pages/bookmarks.tsx'
+import Subjects from './pages/subjects.tsx'
+import PastPapers from './pages/pastPapers.tsx'
+import Revision from './pages/revision.tsx'
+import Settings from './pages/settings.tsx'
+import SearchPage from './pages/search.tsx'
 
 function App() {
   return (
@@ -22,6 +27,11 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/topics/:topicId/content" element={<ContentPage />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
+        <Route path="/subjects" element={<Subjects />} />
+        <Route path="/past-papers" element={<PastPapers />} />
+        <Route path="/revision" element={<Revision />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/search" element={<SearchPage />} />
       </Routes>
     </BrowserRouter>
   )
