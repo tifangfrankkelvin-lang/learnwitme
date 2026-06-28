@@ -3,7 +3,7 @@
 // only if the logged-in user has admin privileges.
 
 import { useEffect, useState } from 'react'
-import { BookOpen, LayoutDashboard, FileText, CheckSquare, Bookmark, LogOut, ShieldCheck, Search } from 'lucide-react'
+import { BookOpen, LayoutDashboard, FileText, CheckSquare, Bookmark, LogOut, ShieldCheck, Search, Calendar } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { isCurrentUserAdmin } from '../lib/admin'
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { label: 'My Subjects', icon: BookOpen,        path: '/subjects'  },
   { label: 'Past Papers', icon: FileText,        path: '/past-papers'},
   { label: 'Revision',    icon: CheckSquare,     path: '/revision'  },
+  { label: 'Study Plan', icon: Calendar, path: '/study-plan' },
   { label: 'Bookmarks',   icon: Bookmark,        path: '/bookmarks' },
 ]
 

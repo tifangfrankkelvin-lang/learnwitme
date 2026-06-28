@@ -13,6 +13,7 @@ import PastPapers from './pages/pastPapers.tsx'
 import Revision from './pages/revision.tsx'
 import Settings from './pages/settings.tsx'
 import SearchPage from './pages/search.tsx'
+import StudyPlan from './pages/studyPlan.tsx'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/revision" element={<Revision />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/study-plan" element={<StudyPlan />} />
       </Routes>
     </BrowserRouter>
   )
