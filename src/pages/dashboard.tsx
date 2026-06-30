@@ -1,3 +1,4 @@
+import NotificationBell from '../components/NotificationBell'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookOpen, Target, Calendar, ChevronRight, Brain, CheckCircle2 } from 'lucide-react'
@@ -127,6 +128,7 @@ export default function Dashboard() {
             <p className="text-sm text-gray-500">Ready to study today?</p>
           </div>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             {profile?.avatar_url ? (
               <img
                 src={profile.avatar_url}
