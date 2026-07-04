@@ -24,7 +24,6 @@ const SUGGESTED_PROMPTS = [
   'How does photosynthesis work?',
   'What is Newton\'s second law of motion?',
   'Explain the water cycle',
-  'What are the causes of World War 1?',
   'How do I solve simultaneous equations?',
 ]
 

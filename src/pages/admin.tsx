@@ -1,6 +1,7 @@
 // src/pages/admin.tsx
 // Admin-only page for adding lessons, questions, and solutions.
 // Protected by checking isCurrentUserAdmin() on load.
+import CSVImport from '../components/CSVImport'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Save, BookOpen, Trash2, Pencil, X, List, PlusCircle } from 'lucide-react'
@@ -695,6 +696,10 @@ export default function Admin() {
             )}
           </div>
         )}
+           {/* ============ CSV BULK IMPORT ============ */}
+        <div className="px-8 py-4 max-w-2xl">
+          <CSVImport />
+        </div>
 
       </main>
     </div>
