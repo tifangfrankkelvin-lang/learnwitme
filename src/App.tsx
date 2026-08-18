@@ -14,6 +14,8 @@ import Revision from './pages/revision.tsx'
 import Settings from './pages/settings.tsx'
 import SearchPage from './pages/search.tsx'
 import StudyPlan from './pages/studyPlan.tsx'
+import Pricing from './pages/pricing.tsx'
+import PaymentCallback from './pages/paymentCallback.tsx'
 
 function App() {
   return (
@@ -34,6 +36,8 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/study-plan" element={<StudyPlan />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/payment/callback" element={<PaymentCallback />} />
       </Routes>
     </BrowserRouter>
   )

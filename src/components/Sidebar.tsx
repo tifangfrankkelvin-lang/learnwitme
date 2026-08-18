@@ -4,7 +4,7 @@
 // - Mobile: hidden by default, slides in when hamburger menu is tapped
 
 import { useEffect, useState } from 'react'
-import { BookOpen, LayoutDashboard, FileText, CheckSquare, Bookmark, LogOut, ShieldCheck, Search, Calendar, Menu, X } from 'lucide-react'
+import { BookOpen, LayoutDashboard, FileText, CheckSquare, Bookmark, LogOut, ShieldCheck, Search, Calendar, Menu, X, Zap  } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { isCurrentUserAdmin } from '../lib/admin'
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { label: 'Revision',    icon: CheckSquare,     path: '/revision'   },
   { label: 'Study Plan',  icon: Calendar,        path: '/study-plan' },
   { label: 'Bookmarks',   icon: Bookmark,        path: '/bookmarks'  },
+  { label: 'Upgrade', icon: Zap, path: '/pricing' },
 ]
 
 export default function Sidebar() {
